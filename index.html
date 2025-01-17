@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>game572</title>
+  <style>
+    body{
+      background-color: #222;
+    }
+    #canvas{
+      border:1px solid #eee;
+    }
+    button{
+      font-size: 41px;
+      border-radius:10px;
+      margin-top:10px;
+    }
+    .display{
+      display:flex;
+      font-size: 21px;
+      color:white;
+      background-color: black;
+      border:1px solid #eee;
+      width:81.4%;
+      padding:10px;
+      margin-top:20px;
+      font-family: Monospace;
+      gap:25px;
+      margin-bottom:5px;
+    }
+
+    #lvlJs{
+      text-align: center;
+      font-weight:bold;
+      background-color: yellow;
+      color:black;
+      border-radius:50%;
+      
+    }
+    #timeJs{
+      text-align: center;
+      font-weight:bold;
+      background-color: red;
+      color:white;
+      border-radius:50%;
+    }
+    #goldJs{
+      text-align: center;
+      font-weight:bold;
+      background-color: orange;
+      color:aqua;
+      border-radius:50%;
+    }
+    .lvlCss{
+      background-color: green;
+      padding:2px 5px;
+      border-radius:5px;
+      border:1px solid #eee;
+      margin-bottom: 3px;
+    }
+    .timeCss{
+      background-color: red;
+      padding:2px 5px;
+      border-radius:5px;
+      border:1px solid #eee;
+      margin-bottom: 3px;
+    }
+    .goldCss{
+      background-color: orange;
+      padding:2px 5px;
+      border-radius:5px;
+      border:1px solid #eee;
+      margin-bottom: 3px;
+    }
+    .btn{
+      margin-left:18px;
+    }
+    .dis{
+      display:flex;
+      font-size: 37px;
+      color:white;
+      background-color: black;
+      border:1px solid #eee;
+      width:81.4%;
+      padding:10px;
+      margin-top:20px;
+      font-family: Monospace;
+      gap:25px;
+      margin-bottom:5px;
+      text-align: center;
+      color:red;
+      font-weight:bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="dis" class="display">
+    <div >
+      <div class="lvlCss">level</div>
+      <div id="lvlJs">1</div>
+    </div>
+    <div >
+      <div class="timeCss">waktu</div>
+      <div id="timeJs">40</div>
+    </div>
+    <div >
+      <div class="goldCss">score</div>
+      <div id="goldJs">0</div>
+    </div>
+  </div>
+  <h3 id="nyw"></h3>
+  <canvas id="canvas"></canvas>
+  <div class="btn">
+  <button onclick="move('atas')">⬆️</button>
+  <button onclick="move('bawah')">⬇️</button>
+  <button onclick="move('kiri')">⬅️</button>
+  <button onclick="move('kanan')">➡️</button>
+  </div>
+  <script>
+    const canvas=document.getElementById("canvas")
+    const ket=document.getElementById("goldJs")
+    const btn=document.getElementsByTagName("button")
+    Array.from(btn).forEach(btn=>btn.addEventListener("click",()=>{
+      setTimeout(()=>{
+        btn.style="background-color:yellow"
+      },0)
+      setTimeout(()=>{
+        btn.style="background-color:white"
+      },350)
+    }))
+    const ctx=canvas.getContext("2d")
+    canvas.width=300
+    canvas.height=300
+    class Drawing{
+       constructor(x,y,item){
+        this.item=item
+        this.kebal=false
+        this.x=x
+        this.y=y
+        this.width=20
+        this.height=20
+        this.marginX=10
+        this.marginY=15
+        this.font="16px Arial"
+      }
+      draw(){
+        ctx.save()
+        ctx.font=this.font
+        ctx.textAlign="center"
+        ctx.fillText(this.item,this.x+this.marginX,this.y+this.marginY)
+        ctx.restore()
+      }
+    }
+    class Player extends Drawing{
+      constructor(x,y,item){
+        super(x,y,item)
+        this.x=135
+        this.y=240
+        this.speed=24
+        this.color="#222"
+        this.nyawa=["💖","💖","💖"]
+      }
+      move(arah){
+        switch(arah){
+          case "atas":
+            this.y -= this.speed
+            break
+          case "bawah":
+            this.y += this.speed
+            break
+          case "kiri":
+            this.x -= this.speed
+            break
+          case "kanan":
+            this.x += this.speed
+            break
+        }
+      }
+      draw(){
+        ctx.save()
+        ctx.fillStyle=this.color
+        ctx.fillRect(this.x,this.y,this.width,this.height)
+        ctx.restore()
+        super.draw()
+      }
+    }
+    
+    class Enemy{
+      constructor(x,y){
+        this.x=x
+        this.y=y
+        this.width=10
+        this.height=10
+        this.speed=4
+        this.color="red"
+        this.arah="kanan"
+      }
+      move(){
+        if(this.arah==="kanan"){
+          this.x += this.speed;
+          (this.x + this.width>canvas.width)? this.arah="kiri":""
+        }else if(this.arah==="kiri"){
+          this.x -= this.speed;
+          (this.x<=0)? this.arah="kanan":""
+        }
+      }
+      draw(){
+        ctx.fillStyle=this.color
+        ctx.fillRect(this.x,this.y,this.width,this.height)
+        ctx.strokeStyle="yellow"
+        ctx.lineWidth=3
+        ctx.strokeRect(this.x,this.y,this.width,this.height)
+      }
+    }
+    class Food extends Drawing{
+      constructor(x,y,item){
+        super(x,y,item)
+        this.width=30
+        this.height=30
+        this.marginX=15
+        this.marginY=20
+        this.font="21px Arial"
+      }
+      
+    }
+    class Level{
+      constructor(enemy){
+        this.enemy=enemy
+        this.point=0
+        this.param=true
+      }
+      perbaruiPoint(score){
+        this.point=score
+      }
+      naikLv(musuh1,musuh2,musuh3){
+        if(this.param&&this.point==40){
+          this.enemy.push(musuh1)
+          this.param=false
+          lvlJs.innerHTML="2"
+        }
+        if(!this.param&&this.point==60){
+          this.enemy.push(musuh2)
+          this.param=true
+          lvlJs.innerHTML="3"
+        }
+        if(this.param&&this.point==80){
+          this.enemy.push(musuh3)
+          this.param=false
+          lvlJs.innerHTML="4"
+        }
+      }
+    }
+    class Item extends Drawing{
+      constructor(x,y,item){
+        super(x,y,item)
+      }
+     
+    }
+    function item(){
+      return Math.floor(Math.random()*290)+0
+    }
+    function item1(){
+      return Math.floor(Math.random()*500)+0
+    }
+    
+    let iitem=[]
+    let iitem2=[]
+    let iitem3=[]
+    let food=[]
+    let panjang=Array(4).fill()
+    panjang.forEach(()=>{
+      food.push(new Food(item(),item(),"🍔"))
+    })
+    
+    const musuh=[
+      new Enemy(30,30),
+      new Enemy(120,120),
+      new Enemy(200,200),
+      ]
+    const player= new Player(1,2,"🐥")
+    function move(arah){
+      if(!gameOver)
+      player.move(arah)
+    }
+    let gameOver=false
+    let score=0
+    
+    let level= new Level(musuh)
+    function cekGame(){
+      if(gameOver)return
+      for(let i=0;i<musuh.length;i++){
+        const msh=musuh[i]
+        if(!iitem3.kebal&&player.x<msh.x+msh.width&&player.x + 10>msh.x&&player.y<msh.y+msh.height&&player.y+10>msh.y){
+         player.nyawa.pop()
+         if(0<player.nyawa.length){
+           player.x=135
+           player.y=240
+         }
+         if(player.nyawa==0){
+          gameOver=true
+          dis.innerHTML="Kamu kalah"
+          dis.className="dis"}
+        }
+      }
+      for(let i=0;i<food.length;i++){
+        const fod=food[i]
+        if(player.x<fod.x+fod.width&&player.x +
+        10>fod.x&&player.y<fod.y+fod.height&&player.y+10>fod.y){
+          food.splice(i,1)
+          score+=10
+          iitem=[new Item(item1(),item1(),"💖")]
+          iitem2=[new Item(item1(),item1(),"⏰️")]
+          if(!iitem3.kebal)
+          iitem3=[new Item(item1(),item1(),"☯️")]
+          level.perbaruiPoint(score)
+          ket.innerHTML=score
+          i--
+        }
+      }
+      
+        if(player.x<iitem[0].x+iitem[0].width&&player.x +
+        10>iitem[0].x&&player.y<iitem[0].y+iitem[0].height&&player.y+10>iitem[0].y){
+          iitem.splice(0,1)
+          if(player.nyawa.length<6)
+             player.nyawa.push("💖")
+        }
+        if(player.x<iitem2[0].x+iitem2[0].width&&player.x +
+        10>iitem2[0].x&&player.y<iitem2[0].y+iitem2[0].height&&player.y+10>iitem2[0].y){
+          iitem2.splice(0,1)
+          sec+=10
+        }
+        if(player.x<iitem3[0].x+iitem3[0].width&&player.x +
+        10>iitem3[0].x&&player.y<iitem3[0].y+iitem3[0].height&&player.y+10>iitem3[0].y){
+          iitem3.splice(0,1)
+          iitem3.kebal=true
+          player.color="black"
+          setTimeout(()=>{
+            iitem3.kebal=false
+          player.color="#222"
+          },8000)
+        }
+      
+      
+    }
+    
+    function tembusPapan(){
+      (player.y<=0)? player.y+=300:(player.y>=300)? player.y-=300:(player.x<=0)? player.x+=300:(player.x>=300)? player.x-=300:""
+    }
+    let sec=0
+    function time(s){
+      sec=s
+      const timer=setInterval(()=>{
+        if(sec>0){
+          sec--
+          timeJs.innerHTML=sec
+        }else{
+          clearInterval(timer)
+          gameOver=true
+          dis.className="dis"
+          dis.innerHTML="WAKTU HABIS"
+        }
+      },1000)
+    }
+    time(60)
+    function intiGame(){
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      player.draw()
+      tembusPapan()
+      nyw.innerHTML=player.nyawa.join(' ')
+      level.naikLv(new Enemy(150,150),new Enemy(278,278),new Enemy(80,80))
+      food.forEach((f)=>f.draw())
+      if(food.length==0){
+        for(i=0;i<4;i++)
+        food.push(new Food(item(),item(),"🍔"))
+      }
+      if(iitem.length==0)
+         iitem.push(new Item(item1(),item1(),"💖"))
+      if(iitem2.length==0)
+         iitem2.push(new Item(item1(),item1(),"⏰️"))
+      if(iitem3.length==0)
+         iitem3.push(new Item(item1(),item1(),"☯️"))
+      musuh.forEach(m=>{
+        if(!gameOver)
+        m.move()
+        m.draw()
+      })
+      iitem.forEach(item=>item.draw())
+      iitem2.forEach(item=>item.draw())
+      iitem3.forEach(item=>item.draw())
+      cekGame()
+      //ini pakai setInterval juga bjsa
+      requestAnimationFrame(intiGame)
+    }
+    intiGame()
+  </script>
+</body>
+</html>
